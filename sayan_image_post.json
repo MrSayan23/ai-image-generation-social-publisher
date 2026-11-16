@@ -1,0 +1,398 @@
+{
+  "name": "sayan_image_post",
+  "nodes": [
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "=17841424417705367",
+        "edge": "media",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "image_url",
+                "value": "={{ $json.body.image_url }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $json.body.caption }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        160,
+        288
+      ],
+      "id": "be949b30-8742-4883-baed-678173642ff6",
+      "name": "Facebook Graph API2",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "x8uTp8anoxTwjXwC",
+          "name": "Facebook Graph account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "=17841424417705367",
+        "edge": "media_publish",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "image_url",
+                "value": "={{ $('Webhook').item.json.body.image_url }}"
+              },
+              {
+                "name": "creation_id",
+                "value": "={{ $json.id }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        512,
+        288
+      ],
+      "id": "1d31d17d-6d37-459f-87bb-01eb3340abfd",
+      "name": "instagram",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "x8uTp8anoxTwjXwC",
+          "name": "Facebook Graph account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        288
+      ],
+      "id": "194a6b20-94b1-4045-93d3-b6a912d42092",
+      "name": "Wait",
+      "webhookId": "30065a95-656a-43c8-b105-be2fc7a363ab"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "1017603131445903",
+        "edge": "photos",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "published  ",
+                "value": "true"
+              },
+              {
+                "name": "url",
+                "value": "={{ $json.body.image_url }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $json.body.caption }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -80
+      ],
+      "id": "b6a4dd24-90ee-47cf-bcda-7fbc8d10d8ee",
+      "name": "facebook1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Nc0GzpA7bAFTgWzI",
+          "name": "Facebook Graph account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d0c1b5fc-d5da-4c7b-bc7f-0a36a96cde8f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -320,
+        192
+      ],
+      "id": "4261ac24-bf4c-4d48-be43-22abd8c701d4",
+      "name": "Webhook",
+      "webhookId": "d0c1b5fc-d5da-4c7b-bc7f-0a36a96cde8f"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c98c17bd-04e8-4880-857f-7250c4b10395",
+              "leftValue": "={{ $json.body.publish_facebook }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "4ea87d59-f4d1-4dc0-814b-df6dc5e45e9a",
+      "name": "If facebook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bc2098d0-5dac-451f-9c68-0d139e0e3aee",
+              "leftValue": "={{ $json.body.publish_instagram }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -96,
+        288
+      ],
+      "id": "851c6dc2-3659-4309-b924-7ba76bdfb518",
+      "name": "If Instagram"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sudeshnas.info/codezsols_infotech/ci_dev/user_files/msit/backend/api/imgp/update_status.php",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"post_id\": {{ $('Webhook').item.json.body.post_id }},\n    \"facebook_status\": \"published\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        544,
+        -80
+      ],
+      "id": "671c0cb0-6b56-4f08-b45a-ab7276beb8f6",
+      "name": "update fb status"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sudeshnas.info/codezsols_infotech/ci_dev/user_files/msit/backend/api/imgp/update_status.php",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"post_id\": {{ $('Webhook').item.json.body.post_id }},\n    \"instagram_status\": \"published\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        288
+      ],
+      "id": "378fab68-1e8a-45e1-8a76-139f1bcc0c07",
+      "name": "update ig status"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sudeshnas.info/codezsols_infotech/ci_dev/user_files/msit/backend/api/imgp/update_status.php",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"post_id\": {{ $json.body.post_id }},\n    \"facebook_status\": \"skipped\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        272,
+        112
+      ],
+      "id": "7c19a642-ee74-4119-a5eb-243875d27393",
+      "name": "Update FB Status Skipped"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sudeshnas.info/codezsols_infotech/ci_dev/user_files/msit/backend/api/imgp/update_status.php",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"post_id\": {{ $json.body.post_id }},\n    \"instagram_status\": \"skipped\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        144,
+        496
+      ],
+      "id": "fc620f66-02ab-4f94-b6ef-1acde5b66727",
+      "name": "Update IG Status Skipped"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Facebook Graph API2": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If facebook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "facebook1": {
+      "main": [
+        [
+          {
+            "node": "update fb status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If facebook": {
+      "main": [
+        [
+          {
+            "node": "facebook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update FB Status Skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Instagram": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update IG Status Skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "instagram": {
+      "main": [
+        [
+          {
+            "node": "update ig status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6a49a9eb-fe0e-4bad-b5d5-930336f964b1",
+  "meta": {
+    "instanceId": "1a070f62fd570f9b448428174e26a566e2f1c714d4e4fbaf2aaf4bac52e484ca"
+  },
+  "id": "nJVMW13siloTM9Pr",
+  "tags": []
+}

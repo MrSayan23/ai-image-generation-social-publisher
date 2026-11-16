@@ -1,0 +1,331 @@
+{
+  "name": "sayan_image_creataion",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Generate AI Image",
+        "formDescription": "Image generator ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Prompt"
+            }
+          ]
+        },
+        "options": {
+          "path": "32bd31ce-9b18-4bdd-91c9-b954f0c08c2d"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -928,
+        -384
+      ],
+      "id": "a6975428-7962-4ed3-8743-58c721bcb53e",
+      "name": "On form submission",
+      "webhookId": "32bd31ce-9b18-4bdd-91c9-b954f0c08c2d",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudinary.com/v1_1/dd7sfz4q5/image/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "upload_preset",
+              "value": "n8n_upload"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a93a1fb4-353c-49ee-a6d4-b66b5808be45",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const imageData = $json.predictions[0].bytesBase64Encoded;\n\nitem.binary = {\n  image: await this.helpers.prepareBinaryData(\n    Buffer.from(imageData, 'base64'),\n    'generated-image.png',\n    'image/png'\n  )\n};\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        16
+      ],
+      "id": "12192061-2917-48c1-abe3-6940fef8b345",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://us-central1-aiplatform.googleapis.com/v1/projects/quick-howl-496915-v1/locations/us-central1/publishers/google/models/imagen-4.0-generate-001:predict",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"instances\": [\n    {\n      \"prompt\": \"{{ $json.body.prompt }}\"\n    }\n  ],\n  \"parameters\": {\n    \"sampleCount\": 1,\n    \"aspectRatio\": \"1:1\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -672,
+        16
+      ],
+      "id": "928ef771-d51c-4e3a-ba7b-9cea00565a94",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "LO2l6Lex9zrJK0jV",
+          "name": "Bearer Auth account 4"
+        },
+        "googleApi": {
+          "id": "4TgqyBwtGCtS2wsi",
+          "name": "image"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "quick-howl-496915-v1",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        304,
+        208
+      ],
+      "id": "f68d5740-47aa-4d87-835e-06d50d7f278e",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "9yyDXXFPfcN5adaJ",
+          "name": "chat model"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Analyze the attached image from Cloudinary. Write an engaging, highly authentic, and creative social media caption that sounds like a human creator, not a generic corporate bot. \n\nStructure the post like this:\n1. THE HOOK: Start with an attention-grabbing first line (use a relatable question, a bold statement, or an exciting update).\n2. THE BODY: Explain the value of what's in the image in a friendly, enthusiastic, and conversational tone. Use short paragraphs and clear spacing.\n3. CALL TO ACTION (CTA): End with a clear action for the audience (e.g., \"Drop a comment below!\", \"Click the link in our bio to try it out!\").\n4. HASHTAGS: Include 5 relevant, trending hashtags at the very bottom.\n\nSTRICT RULES: \n- Do NOT include any introductory lines like \"Here is your caption:\". Start directly with the hook.\n- Do NOT use markdown symbols like asterisks (**) or dashes (---).\n- Mix in a few natural emojis, but don't overdo it. Keep it clean and readable.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageUrl",
+              "imageUrl": "={{ $json.secure_url }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        288,
+        0
+      ],
+      "id": "3cee5c47-081a-45df-a7c8-24640ca443d7",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ea399540-efb6-49aa-b250-438b124c6432",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -864,
+        16
+      ],
+      "id": "3c295b33-18a9-4da0-bd6c-cffbc4ba5b03",
+      "name": "Webhook",
+      "webhookId": "ea399540-efb6-49aa-b250-438b124c6432"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sudeshnas.info/codezsols_infotech/ci_dev/user_files/msit/backend/api/imgp/update_draft.php",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "post_id",
+              "value": "={{ $('Webhook').item.json.body.post_id }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{$('Basic LLM Chain').item.json.text}}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $('HTTP Request').item.json.secure_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        576,
+        16
+      ],
+      "id": "bc99b4ed-7f5a-4d06-a791-12f5ba5e318f",
+      "name": "draft in db"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "reviveblr.info",
+            "content-length": "44",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "223.223.133.211",
+            "cf-ipcountry": "IN",
+            "cf-ray": "a26c4be6aefc146a-BOM",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-warp-tag-id": "17b7381c-4edf-4f88-a076-3ae99e2508ce",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "x-forwarded-for": "223.223.133.211",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "post_id": "15",
+            "user_id": 16,
+            "prompt": "man"
+          },
+          "webhookUrl": "https://reviveblr.info/webhook/ea399540-efb6-49aa-b250-438b124c6432",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "draft in db",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1c613e55-a2b7-4b41-8a67-dd39a8cde0b7",
+  "meta": {
+    "instanceId": "1a070f62fd570f9b448428174e26a566e2f1c714d4e4fbaf2aaf4bac52e484ca"
+  },
+  "id": "OeDKYx5zSfRAEWGk",
+  "tags": []
+}
